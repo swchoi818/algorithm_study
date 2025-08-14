@@ -2,7 +2,6 @@ class Microbial:
     def __init__(self, mic_info):
         self.locate = [mic_info[0], mic_info[1]]
         self.num = mic_info[2]
-        self.max_num = mic_info[2]
         self.dir = mic_info[3]
 
     def move(self):
@@ -27,7 +26,6 @@ class Microbial:
         elif self.dir == 4:
             self.dir = 3
         self.num //= 2
-        self.max_num = self.num
         return self.num
 
     def merge_microb(self, mic):
@@ -48,16 +46,16 @@ for test_case in range(1, T + 1):
         microb_list.append(Microbial(list(map(int, input().split()))))
     for i in range(M):
         locate_dict = {}
-        for microb in microb_list:
-            if microb.num != 0:
-                now_loc = tuple(microb.move())
+        for j in range(K):
+            if microb_list[j].num != 0:
+                now_loc = tuple(microb_list[j].move())
                 if (now_loc[0] == N - 1) or (now_loc[0] == 0) or (now_loc[1] == N - 1) or (now_loc[1] == 0):
-                    microb.meet_chemical()
-                try:
-                    microb_list[locate_dict[now_loc]].merge_microb(microb)
-                    microb.num = 0
-                except:
-                    locate_dict[now_loc] = microb_list.index(microb)
+                    microb_list[j].meet_chemical()
+                if locate_dict.get(now_loc) != None:
+                    microb_list[locate_dict[now_loc]].merge_microb(microb_list[j])
+                    microb_list[j].num = 0
+                else:
+                    locate_dict[now_loc] = j
     result = 0
     for m in microb_list:
         result += m.num
