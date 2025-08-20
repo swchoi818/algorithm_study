@@ -1,54 +1,43 @@
-# 왔던 경로의 숫자를 저장하는 집합 생성
-# 다시 돌아왔을 때 각 집합에 있는 값을 sum
-# dfs 
-# dir 0 1 이후 3 4는 정해져 있음, 방향을 바꿀 때 현재 이동한 만큼 거리를 저장하는 변수 선언 필요
+# 각 좌표 별로 dfs 이용하여 구현
+# 방향은 (1, -1), (1, 1), (-1, 1), (-1, -1) -> 이 순서
+# 세번 바꾼 이후에는 처음 값까지 이동
+# 사각형이 만들어지면 경로에 있던 요소들의 수를 결과에 저장(최대값)
+# 중간에 return 조건 : 배열의 범위를 벗어났을 때, 이미 지나온 경로에 있는 값과 같은 값에 접근했을 때(방문처리)
+# 모든 사각형을 탐색 후 출력
+# 사각형이 완성 됐을 때만 결과 값을 비교
 
-def dessert_route(y, x):
-    global N, dessert_mtr, dir_diag, visited, length, result, res_cnt
-    for i in range(2):
-        dy, dx = dir_diag[i]
+dir_4 = [(1, -1), (1, 1), (-1, 1), (-1, -1)]
+
+
+def find_route(y, x, dr):
+    global dessert_map, route, visited
+    for d in range(dr, 4):
+        dy, dx = dir_4[d]
         nx = x + dx
         ny = y + dy
-        if 0 <= nx < N and 0 <= ny < N:
-            if dessert_mtr[ny][nx] in visited:
+        if 0 <= x < N and 0 <= y < N:
+            if d == 3 and (ny, nx) == start_xy:
+                result = max(len(route), result)
                 return
-            length[i] += 1
-            visited.add(dessert_mtr[ny][nx])
-            dessert_route(ny, nx)
-            length[i] -= 1
-            visited.discard(dessert_mtr[ny][nx])
-
-    for dx, dy in dir_diag[2:4]:
-        nx = x + dx
-        ny = y + dy
-        if 0 <= nx < N and 0 <= ny < N:
-            if dessert_mtr[ny][nx] in visited:
-                return
-            visited.add(dessert_mtr[ny][nx])
-    else:
-        if sum(visited) > result:
-            result = sum(visited)
-            print(visited)
-            res_cnt = len(visited)
+            if dr < 3:
+                if not visited[dessert_map[y][x]]:
+                    visited[dessert_map[ny][nx]] = True
+                    find_route(ny, nx, d)
 
 
 T = int(input())
 
 for t in range(1, T + 1):
     N = int(input())
-    dessert_mtr = [list(map(int, input().split())) for _ in range(N)]
-    visited = set()
-    result = 0
-    res_cnt = -1
-    length = [0, 0]
-    dir_diag = [(-1, -1), (-1, 1), (1, 1), (1, -1)]
+    dessert_map = [list(map(int, input().split())) for _ in range(N)]
+    result = -1
+    passing_len = 0
+    start_xy = (0, 0)
     edge = [(0, 0), (0, N - 1), (N - 1, 0), (N - 1, N - 1)]
-
     for i in range(N):
         for j in range(N):
-            if (i, j) not in edge:
-                visited = set()
-                dessert_route(i, j)
-    
-    print(f"#{t} {res_cnt}")
-
+            route = []
+            visited = [False] * 101
+            start_xy = (i, j)
+            visited[dessert_map[i][j]] = True
+            find_route(i, j, 0)
