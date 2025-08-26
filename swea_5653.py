@@ -10,35 +10,44 @@
 # 결과는 활성 세포 수 + 비활성 세포
 
 # 세포 증식 함수? 비활성 대기 함수
+# 세포 클래스
 class Cell:
-    def __init__(self, health, locate):
-        self.health = health
+    def __init__(self, locate, vitality):
+        self.is_activ = False
         self.locate = locate
-        self.wait_time = health
+        self.vitality = vitality
+        self.time = vitality
 
-    def waiting(self):
-        self.wait_time -= 1
-        if self.wait_time == 0:
-            self.wait_time = self.health
+    def wait_time(self):
+        self.time -= 1
+        if self.time == 0:
+            self.is_activ = True
             return True
         return False
-    
 
-dir_4 = [(1, 0), (-1, 0), (0, 1), (0, -1)]
+    def vital_decrease(self):
+        self.vitality -= 1
+        if self.vitality == 0:
+            return True
+        return False
 
-def increase_cell(cell):
-    y = cell.locate[0]
-    x = cell.locate[1]
+
+dir_4 = [(-1, 0), (1, 0), (0, -1), (0, 1)]
+
+
+# 세포 증식 함수
+def increase(cell):
+    global inc_tmp, wait_cell, active_cell, death_cell
+    cell.is_activ = False
     for dy, dx in dir_4:
-        ny = y + dy
-        nx = x + dx
-        if (ny, nx) not in (active_cell + wait_cell + death_cell):
-            if (ny, nx) in inc_cell:
-                cell_dict[(ny, nx)].health = max(cell_dict[(ny, nx)].health, cell_dict[(y, x)].health)
-            else:
-                cell_dict[(ny, nx)] = Cell(cell_dict[(y, x)], (ny, nx))
-                inc_cell.add((ny, nx))
-    return inc_cell
+        nx, ny = cell.locate[1] + dx, cell.locate[0] + dy
+        if (ny, nx) in wait_cell or (ny, nx) in  death_cell or (ny, nx) in active_cell:
+            continue
+        if (ny, nx) in inc_tmp:
+            inc_tmp[(ny, nx)].vitality = max(inc_tmp[(ny, nx)].vitality, cell.vitality)
+            inc_tmp[(ny, nx)].time = inc_tmp[(ny, nx)].vitality
+            continue
+        inc_tmp[(ny, nx)] = Cell((ny, nx), cell.vitality)
 
 
 T = int(input())
@@ -46,34 +55,39 @@ T = int(input())
 for t in range(1, T + 1):
     N, M, K = map(int, input().split())
     cell_mtr = [list(map(int, input().split())) for _ in range(N)]
-    cell_dict = {}
-    wait_cell = set()
-    active_cell = set()
-    death_cell = set()
-    inc_cell = set()
+    cell_dict = {}  # 세포 정보를 담을 dict
+    wait_cell = set()  # 비활성화 세포 집합
+    active_cell = set()  # 활성화 세포 집합
+    death_cell = set()  # 죽은 세포 집합
     for i in range(N):
         for j in range(M):
             if cell_mtr[i][j] != 0:
-                cell_dict[(i, j)] = Cell(cell_mtr[i][j], (i, j))
+                cell_dict[(i, j)] = Cell((i, j), cell_mtr[i][j])
                 wait_cell.add((i, j))
-
+    inc_tmp = {}
     for _ in range(K):
-        tmp = set()
-        for activ_key in active_cell:
-            if cell_dict[activ_key].wait_time == cell_dict[activ_key].health:
-                wait_cell.union(increase_cell(cell_dict[activ_key]))
-            if cell_dict[activ_key].waiting():
-                tmp.add(activ_key)
+        # 활성화 된 세포 증식, 세포 생명력 -1, 처음 활성화된 세포는 is_activ -> True 증식 후 False 로 변경(increase 함수 참고)
+        set_tmp = active_cell.copy()
+        for cell in active_cell:
+            if cell_dict[cell].is_activ:
+                increase(cell_dict[cell])
+            if cell_dict[cell].vital_decrease():
+                death_cell.add(cell)
+                set_tmp.discard(cell)
+        active_cell = set_tmp.copy()
 
-        tmp2 = set()
-        for wait_key in wait_cell:
-            if cell_dict[wait_key].waiting():
-                tmp2.add(wait_key)
-    
-        active_cell = active_cell - tmp
-        death_cell.union(tmp)
-        
-        wait_cell = wait_cell - tmp2
-        active_cell.union(tmp2)
+        # 비활성 세포 대기 시간 -1
+        set_tmp = wait_cell.copy()
+        for cell in wait_cell:
+            if cell_dict[cell].wait_time():
+                active_cell.add(cell)
+                set_tmp.discard(cell)
+        wait_cell = set_tmp.copy()
 
-    print(f"#{t} {len(wait_cell) + len(active_cell)}")
+        cell_dict.update(inc_tmp)
+        wait_cell.update(inc_tmp.keys())
+
+        inc_tmp.clear()
+
+    result = len(active_cell) + len(wait_cell)
+    print(f"#{t}", result)
