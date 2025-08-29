@@ -7,10 +7,10 @@ T = int(input())
 for t in range(1, T + 1):
     N, M = map(int, input().split())
     city_mtr = [list(map(int, input().split())) for _ in range(N)]
-    visited = [[False] * N for _ in range(N)]
     result = 0
     for i in range(N):
         for j in range(N):
+            visited = [[False] * N for _ in range(N)]
             bfs_deq = deque()
             bfs_deq.append((i, j, 1))
             visited[i][j] = True
