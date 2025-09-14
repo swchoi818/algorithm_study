@@ -16,7 +16,7 @@ while dfs_stack:
     root = dfs_stack[-1]
 
     next_node = None
-    for node in sorted(graph_dict[root], reverse=True):
+    for node in sorted(graph_dict[root]):
         if not visited[node]:
             next_node = node
             break
@@ -40,6 +40,7 @@ while bfs_queue:
             continue
         visited[node] = True
         bfs_queue.append(node)
-        result[1].append(root)
+        result[1].append(node)
 
-print(*result, sep='\n')
+print(*result[0])
+print(*result[1])
