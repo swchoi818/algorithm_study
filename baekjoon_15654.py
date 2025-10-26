@@ -3,7 +3,7 @@ import sys
 def dfs(selected, remained):
     global result
     if len(selected) == M:
-        result.append(''.join(selected))
+        result.append(selected[:])
         return
     for i in range(len(remained)):
         selected.append(remained[i])
@@ -19,5 +19,5 @@ num_list = list(map(int, input().split()))
 
 dfs([], num_list)
 
-for r in result:
+for r in sorted(result):
     print(*r)
