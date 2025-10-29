@@ -6,20 +6,26 @@ dir_4 = [(1, 0), (-1, 0), (0, -1), (0, 1)]
 input = sys.stdin.readline
 
 
-def melt_ice(mtr_copy):
+def melt_ice():
     global mtr
-    is_melted = False
+    melt_cnt = [[0] * M for _ in range(N)]
     for i in range(N):
         for j in range(M):
-            if mtr_copy[i][j] != 0:
-                for dx, dy in dir_4:
-                    nx = j + dx
-                    ny = i + dy
-                    if 0 <= nx < M and 0 <= ny < N and not mtr_copy[ny][nx] and mtr[i][j] > 0:
-                        mtr[i][j] -= 1
-                        if mtr[i][j] == 0:
-                            is_melted = True
-    return is_melted
+            if mtr[i][j] == 0:
+                continue
+            for dx, dy in dir_4:
+                nx = j + dx
+                ny = i + dy
+                if 0 <= nx < M and 0 <= ny < N and not mtr[ny][nx] and mtr[i][j] > 0:
+                    melt_cnt[i][j] += 1
+
+    for i in range(N):
+        for j in range(M):
+            if melt_cnt[i][j] == 0:
+                continue
+            mtr[i][j] -= melt_cnt[i][j]
+            if mtr[i][j] <= 0:
+                mtr[i][j] = 0
 
 
 def is_split():
@@ -58,6 +64,6 @@ while True:
     if is_split():
         break
     time_cnt += 1
-    melt_ice([i[:] for i in mtr])
+    melt_ice()
 
 print(time_cnt)
