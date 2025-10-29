@@ -39,7 +39,7 @@ def get_max_square(low, high, left, right, histo):
 
 while True:
     histogram = list(map(int, input().split()))
-    if histogram == 0:
+    if histogram == [0]:
         exit(0)
     print(divide_conquer(0, histogram[0] - 1, histogram[1:]))
 
